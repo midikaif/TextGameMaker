@@ -5,7 +5,6 @@ import { CoreNode, NodeTypeMap, ValueType, Output, NODE_WIDTH, NODE_HANDLE_HEIGH
 import { ArrayHelpers } from "../engine/std.js";
 import { Input } from "../engine/input.js";
 import { LocalStorage } from "../engine/local_storage.js";
-import { HTTP } from "../engine/http.js";
 import { EditorCanvas } from "./editor_canvas.js";
 import { NodeManager } from "./node_manager.js";
 import { Application } from "../application.js";
@@ -280,12 +279,13 @@ export class EditorApplication extends Application {
 	}
 
 	async jumpLoad(scope) {
-		let data = await HTTP.get("view/json/" + scope.src.Value);
-		if (data) {
+		let data = await fetch("view/json/" + scope.src.Value);
+		let parsedData = await data.json();
+		if (parsedData) {
 			let hasReturn = false;
-			console.log(data.nodes);
-			for (let i = 0; i < data.nodes.length; i++) {
-				if (data.nodes[i].type === "Return") {
+			console.log(parsedData.nodes);
+			for (let i = 0; i < parsedData.nodes.length; i++) {
+				if (parsedData.nodes[i].type === "Return") {
 					hasReturn = true;
 					break;
 				}
@@ -294,7 +294,7 @@ export class EditorApplication extends Application {
 				ArrayHelpers.clear(this.jumpStack);
 			else if (this.lastData)
 				this.jumpStack.push(this.lastData);
-			this.import(data);
+			this.import(parsedData);
 			window.scrollTo(0, 0);
 			this.#lastPageY = 0;
 		}
